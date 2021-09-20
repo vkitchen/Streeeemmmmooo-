@@ -1,3 +1,6 @@
+# Doing it all in the controller cause the app seems simple
+# No point bloating out with libraries or splitting logic
+# ¯\_(ツ)_/¯
 class NewsController < ApplicationController
   def results
     render json: SearchClient.search(
@@ -6,7 +9,7 @@ class NewsController < ApplicationController
         query: {
           match: {
             title: {
-              query: 'scott morrison'
+              query: params[:query]
             }
           }
         }
