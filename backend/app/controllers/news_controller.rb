@@ -1,5 +1,16 @@
 class NewsController < ApplicationController
   def results
-    render json: [1, 2, 3]
+    render json: SearchClient.search(
+      index: 'news',
+      body: {
+        query: {
+          match: {
+            title: {
+              query: 'scott morrison'
+            }
+          }
+        }
+      }
+    )
   end
 end
