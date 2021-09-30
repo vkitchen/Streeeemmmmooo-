@@ -7,5 +7,11 @@ export default defineConfig({
   plugins: [
     vue(),
     WindiCSS(),
-  ]
+  ],
+  server: {
+    port: 8000,
+    proxy: {
+      '/results': 'http://127.0.0.1:3000',
+    },
+  }
 })
