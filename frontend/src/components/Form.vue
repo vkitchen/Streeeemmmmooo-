@@ -4,7 +4,7 @@
     bg="gray-700"
     text="sm white"
     border="2 rounded"
-    :value="query"
+    v-model="query"
   >
   <Datepicker v-model="after" />
   <Datepicker v-model="before" />
@@ -26,16 +26,11 @@ import Datepicker from 'vue3-datepicker'
 import fromUnixTime from 'date-fns/fromUnixTime'
 import getUnixTime from 'date-fns/getUnixTime'
 
-const query = ref('scott morrison')
-const after = ref(fromUnixTime(1567173600))
-const before = ref(fromUnixTime(1564581600))
+const query = ref('scott morrison');
+const after = ref(fromUnixTime(1567173600));
+const before = ref(new Date());
 
-defineProps({
-  query: String,
-  search: Function,
-})
-
-const emit = defineEmits(['search'])
+const emit = defineEmits(['search']);
 
 const search = () => {
   emit('search', {

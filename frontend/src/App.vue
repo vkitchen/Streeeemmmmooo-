@@ -1,16 +1,124 @@
 <template>
   <Form @search="search" />
-  <Chart />
+  {{ radio(aggs) }}
+  {{ tv(aggs) }}
+  {{ online(aggs) }}
+  {{ print(aggs) }}
+  {{ social(aggs) }}
+  <VChart class="chart" :option="option" />
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { BarChart } from "echarts/charts";
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from "echarts/components";
+import VChart from "vue-echarts";
 import Form from './components/Form.vue'
-import Chart from './components/Chart.vue'
+
+const aggs = ref();
+
+// readability > dry
+const xAxis = a => a ? a.first_agg.buckets.map(b => b.key) : [];
+const radio = a => a ? a.first_agg.buckets.map(b => b.second_agg.buckets.find(e => e.key === 'Radio')?.doc_count ?? 0) : [];
+const tv = a => a ? a.first_agg.buckets.map(b => b.second_agg.buckets.find(e => e.key === 'TV')?.doc_count ?? 0) : [];
+const online = a => a ? a.first_agg.buckets.map(b => b.second_agg.buckets.find(e => e.key === 'Online')?.doc_count ?? 0) : [];
+const print = a => a ? a.first_agg.buckets.map(b => b.second_agg.buckets.find(e => e.key === 'Print')?.doc_count ?? 0) : [];
+const social = a => a ? a.first_agg.buckets.map(b => b.second_agg.buckets.find(e => e.key === 'Social')?.doc_count ?? 0) : [];
+
+use([
+  CanvasRenderer,
+  BarChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+]);
+
+const option = computed(() => ({
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    }
+  },
+  legend: {},
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  xAxis: {
+    type: 'category',
+    data: [1, 2, 3]
+  },
+  yAxis: {
+    type: 'value'
+  },
+  series: [
+    {
+      name: 'Radio',
+      type: 'bar',
+      stack: 'Medium',
+      emphasis: {
+        focus: 'series'
+      },
+      data: radio(aggs.value)
+    },
+    {
+      name: 'TV',
+      type: 'bar',
+      stack: 'Medium',
+      emphasis: {
+        focus: 'series'
+      },
+      data: tv(aggs.value)
+    },
+    {
+      name: 'Online',
+      type: 'bar',
+      stack: 'Medium',
+      emphasis: {
+        focus: 'series'
+      },
+      data: online(aggs.value)
+    },
+    {
+      name: 'Print',
+      type: 'bar',
+      stack: 'Medium',
+      emphasis: {
+        focus: 'series'
+      },
+      data: print(aggs.value)
+    },
+    {
+      name: 'Social',
+      type: 'bar',
+      stack: 'Medium',
+      emphasis: {
+        focus: 'series'
+      },
+      data: social(aggs.value)
+    },
+  ]
+}));
 
 const search = ({query, after, before}) => {
-  console.log('load results called', query, after, before)
   fetch(`/results?query=${query}&after=${after}&before=${before}&interval=1d`)
-    .then(d => console.log(d.json()))
+    .then(data => data.json())
+    .then(d => {
+      aggs.value = d.aggregations;
+      console.log('xAxis', xAxis(d.aggregations));
+      console.log('radio', radio(d.aggregations));
+    })
 };
 </script>
 
@@ -21,5 +129,8 @@ const search = ({query, after, before}) => {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   margin-top: 60px;
+}
+.chart {
+  height: 400px;
 }
 </style>

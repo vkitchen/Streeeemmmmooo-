@@ -7,9 +7,30 @@ class NewsController < ApplicationController
       index: 'news',
       body: {
         query: {
-          match: {
-            title: {
-              query: params[:query]
+          # match: {
+          #   title: {
+          #     query: params[:query]
+          #   }
+          # },
+          range: {
+            timestamp: {
+              gte: params[:after].to_i * 1000,
+              lt: params[:before].to_i * 1000
+            }
+          }
+        },
+        aggs: {
+          first_agg: {
+            date_histogram: {
+              field: 'timestamp',
+              calendar_interval: '1d'
+            },
+            aggs: {
+              second_agg: {
+                terms: {
+                  field: 'medium'
+                }
+              }
             }
           }
         }
