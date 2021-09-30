@@ -1,10 +1,5 @@
 <template>
   <Form @search="search" />
-  {{ radio(aggs) }}
-  {{ tv(aggs) }}
-  {{ online(aggs) }}
-  {{ print(aggs) }}
-  {{ social(aggs) }}
   <VChart class="chart" :option="option" />
 </template>
 
@@ -20,12 +15,13 @@ import {
   GridComponent,
 } from "echarts/components";
 import VChart from "vue-echarts";
+import format from 'date-fns/format'
 import Form from './components/Form.vue'
 
 const aggs = ref();
 
 // readability > dry
-const xAxis = a => a ? a.first_agg.buckets.map(b => b.key) : [];
+const xAxis = a => a ? a.first_agg.buckets.map(b => format(b.key, 'yyyy-MM-dd')) : [];
 const radio = a => a ? a.first_agg.buckets.map(b => b.second_agg.buckets.find(e => e.key === 'Radio')?.doc_count ?? 0) : [];
 const tv = a => a ? a.first_agg.buckets.map(b => b.second_agg.buckets.find(e => e.key === 'TV')?.doc_count ?? 0) : [];
 const online = a => a ? a.first_agg.buckets.map(b => b.second_agg.buckets.find(e => e.key === 'Online')?.doc_count ?? 0) : [];
@@ -48,7 +44,11 @@ const option = computed(() => ({
       type: 'shadow'
     }
   },
-  legend: {},
+  legend: {
+    orient: 'vertical',
+    right: 10,
+    top: 'center'
+  },
   grid: {
     left: '3%',
     right: '4%',
@@ -57,10 +57,16 @@ const option = computed(() => ({
   },
   xAxis: {
     type: 'category',
-    data: [1, 2, 3]
+    data: xAxis(aggs.value),
+    name: 'Timestamp per period',
+    nameLocation: 'middle',
+    nameGap: 20
   },
   yAxis: {
-    type: 'value'
+    type: 'value',
+    name: 'Count of records',
+    nameLocation: 'middle',
+    nameGap: 50
   },
   series: [
     {
@@ -111,13 +117,11 @@ const option = computed(() => ({
   ]
 }));
 
-const search = ({query, after, before}) => {
-  fetch(`/results?query=${query}&after=${after}&before=${before}&interval=1d`)
+const search = ({query, after, before, interval}) => {
+  fetch(`/results?query=${query}&after=${after}&before=${before}&interval=${interval}`)
     .then(data => data.json())
     .then(d => {
       aggs.value = d.aggregations;
-      console.log('xAxis', xAxis(d.aggregations));
-      console.log('radio', radio(d.aggregations));
     })
 };
 </script>

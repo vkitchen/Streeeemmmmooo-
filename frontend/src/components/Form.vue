@@ -8,6 +8,12 @@
   >
   <Datepicker v-model="after" />
   <Datepicker v-model="before" />
+  <select v-model="interval">
+    <option value="1h">1 Hour</option>
+    <option value="1d">1 Day</option>
+    <option value="1w">1 Week</option>
+    <option value="1m">1 Month</option>
+  </select>
   <button
       bg="blue-400 hover:blue-500 dark:blue-500 dark:hover:blue-600"
       text="sm white"
@@ -24,19 +30,21 @@
 import { ref } from 'vue'
 import Datepicker from 'vue3-datepicker'
 import fromUnixTime from 'date-fns/fromUnixTime'
-import getUnixTime from 'date-fns/getUnixTime'
+import getTime from 'date-fns/getTime'
 
 const query = ref('scott morrison');
 const after = ref(fromUnixTime(1567173600));
 const before = ref(new Date());
+const interval = ref('1d');
 
 const emit = defineEmits(['search']);
 
 const search = () => {
   emit('search', {
     query: query.value,
-    after: getUnixTime(after.value),
-    before: getUnixTime(before.value),
+    after: getTime(after.value),
+    before: getTime(before.value),
+    interval: interval.value,
   });
 };
 </script>
